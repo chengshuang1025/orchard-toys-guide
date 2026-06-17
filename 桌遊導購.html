@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>桌遊導購選擇頁</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Serif TC', '微軟正黑體', serif;
+      background: #F5F5F5;
+      color: #333;
+    }
+
+    /* ── 頁首 ── */
+    header {
+      background: url('header-photo.JPG') center center / cover no-repeat;
+      color: white;
+      text-align: center;
+      padding: 70px 16px 60px;
+      position: relative;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.73);
+    }
+    header > * { position: relative; z-index: 1; }
+    header h1 { font-size: 1.6rem; letter-spacing: 2px; }
+    header p  { font-size: 0.9rem; margin-top: 6px; opacity: 0.9; }
+
+    /* ── 購買連結按鈕 ── */
+    .buy-link {
+      display: inline-block;
+      margin-top: 22px;
+      padding: 8px 28px;
+      background: white;
+      color: #000000;
+      font-weight: bold;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .buy-link:hover { background: #e8f0ef; }
+
+    /* ── 篩選區 ── */
+    .filter-section {
+      background: #F5F5F5;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+    .filter-section.hide-filters {
+      transform: translateY(-100%);
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #999;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border: 2px solid #ddd;
+      border-radius: 999px;
+      background: white;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    /* 年齡篩選 active */
+    .age-btn.active {
+      background: #DFF1F1;
+      border-color: transparent;
+      color: #2a7a7a;
+      font-weight: bold;
+    }
+
+    /* 主題篩選 active */
+    .theme-btn.active {
+      background: #5A9090;
+      border-color: #5A9090;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* 全部按鈕 active（三排共用） */
+    .all-btn.active {
+      background: #5A9690 !important;
+      border-color: #5A9690 !important;
+      color: white !important;
+      font-weight: bold;
+    }
+
+    /* 類型篩選 active */
+    .type-btn.active {
+      background: #2F578A;
+      border-color: #2F578A;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* 狀態篩選 active */
+    .status-btn.active {
+      background: #ECB65F;
+      border-color: #ECB65F;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* 進行方式篩選 active */
+    .method-btn.active {
+      background: #7B5EA7;
+      border-color: #7B5EA7;
+      color: white;
+      font-weight: bold;
+    }
+
+    .filter-btn:hover:not(.active) {
+      border-color: #aaa;
+      background: #f5f5f5;
+    }
+
+    /* ── 商品區 ── */
+    .product-section { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
+
+    .no-result {
+      text-align: center;
+      color: #aaa;
+      padding: 60px 0;
+      font-size: 1rem;
+      display: none;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── 商品卡片 ── */
+    .product-card {
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+    }
+    .product-card.hidden { display: none; }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+
+    /* 圖片佔位符 */
+    .card-img-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, #DFF1F1, #BBD5DA);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+
+    .card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: bold;
+    }
+    .tag-age   { background: #DFF1F1; color: #2a7a7a; }
+    .tag-theme  { background: #5A9090; color: white; }
+    .tag-type   { background: #2F578A; color: white; }
+    .tag-status { background: #ECB65F; color: white; }
+
+    .card-name {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: #666;
+      line-height: 1.5;
+      flex: 1;
+      /* 佔位提示 */
+    }
+
+    .card-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .card-price {
+      text-align: right;
+    }
+    .card-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .card-btns .card-btn,
+    .card-btns .intro-btn {
+      flex: 1;
+      text-align: center;
+    }
+
+    .intro-btn {
+      background: white;
+      color: #547792;
+      border: 1.5px solid #547792;
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .intro-btn:hover { background: #547792; color: white; }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    #lightbox.open { display: flex; }
+
+    .lb-container {
+      position: relative;
+      width: min(90vw, 390px);
+      aspect-ratio: 9 / 16;
+      background: #111;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .lb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .lb-img.active { display: block; }
+
+    .lb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .lb-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lb-nav {
+      background: rgba(255,255,255,0.3);
+      border: none;
+      color: white;
+      font-size: 1.6rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .lb-nav:hover { background: rgba(255,255,255,0.6); }
+
+    .lb-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.6rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .lb-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+    .lb-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transition: background 0.2s;
+    }
+    .lb-dot.active { background: white; }
+
+    .card-price {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #C9534F;
+    }
+
+    /* ── 加入清單按鈕 ── */
+    .add-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 5px;
+      background: #f5fbfa;
+      border: 1.5px dashed #5A9690;
+      border-radius: 6px;
+      color: #5A9690;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: 'Noto Serif TC', '微軟正黑體', serif;
+      transition: all 0.2s;
+    }
+    .add-btn:hover { background: #5A9690; color: white; }
+
+    /* ── 浮動試算面板 ── */
+    #cart-panel {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 270px;
+      max-height: 70vh;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      z-index: 2000;
+      overflow: hidden;
+    }
+    .cart-header {
+      padding: 12px 16px;
+      background: #5A9690;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+    #cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 8px;
+    }
+    #cart-empty {
+      padding: 16px;
+      text-align: center;
+      color: #aaa;
+      font-size: 0.82rem;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 4px;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 0.82rem;
+    }
+    .cart-item-name { flex: 1; color: #333; }
+    .cart-item-qty  { color: #888; font-size: 0.75rem; white-space: nowrap; }
+    .cart-item-price { color: #C9534F; font-weight: bold; min-width: 44px; text-align: right; white-space: nowrap; }
+    .cart-remove-btn {
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #666;
+      flex-shrink: 0;
+    }
+    .cart-remove-btn:hover { background: #ff6060; color: white; }
+    #cart-total {
+      padding: 10px 16px;
+      border-top: 2px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 0.95rem;
+      background: #fafafa;
+    }
+    #cart-total-amount { color: #C9534F; font-size: 1.1rem; }
+
+    .card-btn {
+      background: #213448;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .card-btn:hover { background: #152433; }
+
+    /* ── 頁尾 ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.8rem;
+      color: #2F5755;
+      margin-top: 20px;
+    }
+
+    /* ── 手機版調整 ── */
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.3rem; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>好事丞雙 x 英國Orchard toys桌遊品牌<br><span style="font-size:0.75em; font-weight:normal; letter-spacing:2px;">兒童桌遊導購介紹</span></h1>
+  <p style="color:white; line-height:1.8; font-family:'Noto Sans TC','微軟正黑體',sans-serif; font-size:0.85rem; margin-top:6%;">丞雙玩過一一解析來分享<br>若有遊戲疑問<br>歡迎直接私訊IG或粉絲頁找我</p>
+  <a class="buy-link" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">
+    前往團購頁下單
+  </a>
+</header>
+
+<!-- ── 篩選區 ── -->
+<div class="filter-section">
+  <div class="filter-label">依年齡篩選</div>
+  <div class="filter-group" id="age-filter">
+    <button class="filter-btn age-btn all-btn active" data-age="all">全部年齡</button>
+    <button class="filter-btn age-btn" data-age="2">2歲起</button>
+    <button class="filter-btn age-btn" data-age="3">3歲</button>
+    <button class="filter-btn age-btn" data-age="4">4歲</button>
+    <button class="filter-btn age-btn" data-age="5">5歲</button>
+    <button class="filter-btn age-btn" data-age="6">6歲</button>
+  </div>
+
+  <div class="filter-label">依造型篩選</div>
+  <div class="filter-group" id="theme-filter">
+    <button class="filter-btn theme-btn all-btn active" data-theme="all">全部造型</button>
+    <button class="filter-btn theme-btn" data-theme="昆蟲">昆蟲</button>
+    <button class="filter-btn theme-btn" data-theme="動物">動物</button>
+    <button class="filter-btn theme-btn" data-theme="海洋">海洋</button>
+    <button class="filter-btn theme-btn" data-theme="交通">交通</button>
+    <button class="filter-btn theme-btn" data-theme="恐龍">恐龍</button>
+    <button class="filter-btn theme-btn" data-theme="購物">購物</button>
+    <button class="filter-btn theme-btn" data-theme="彼得兔">彼得兔</button>
+    <button class="filter-btn theme-btn" data-theme="怪物">怪物</button>
+  </div>
+
+  <div class="filter-label">依類型篩選</div>
+  <div class="filter-group" id="type-filter">
+    <button class="filter-btn type-btn all-btn active" data-type="all">全部類型</button>
+    <button class="filter-btn type-btn" data-type="數學">數學</button>
+    <button class="filter-btn type-btn" data-type="英文">英文</button>
+    <button class="filter-btn type-btn" data-type="可攜桌遊">可攜桌遊</button>
+    <button class="filter-btn type-btn" data-type="顏色">顏色</button>
+  </div>
+
+  <div class="filter-label">依新舊篩選</div>
+  <div class="filter-group" id="status-filter">
+    <button class="filter-btn status-btn all-btn active" data-status="all">全部商品</button>
+    <button class="filter-btn status-btn" data-status="新品項">新品項</button>
+    <button class="filter-btn status-btn" data-status="上團品項">上團品項</button>
+  </div>
+
+  <div class="filter-label">依進行方式篩選</div>
+  <div class="filter-group" id="method-filter">
+    <button class="filter-btn method-btn all-btn active" data-method="all">全部方式</button>
+    <button class="filter-btn method-btn" data-method="轉盤">轉盤</button>
+    <button class="filter-btn method-btn" data-method="擲骰子">擲骰子</button>
+    <button class="filter-btn method-btn" data-method="翻牌">翻牌</button>
+  </div>
+</div>
+
+<!-- ── 商品列表 ── -->
+<div class="product-section">
+  <div class="no-result" id="no-result">😅 沒有符合條件的商品，換個組合試試看！</div>
+  <div class="product-grid" id="product-grid">
+
+    <!--
+    ═══════════════════════════════════════════════════════════════
+    📌 商品填寫說明（明天填入後刪除此說明區塊）：
+
+    每張卡片的 data-age  可填：2-3 / 3-4 / 4-6 / 6+（可用空格分隔多個）
+    每張卡片的 data-theme 可填：昆蟲 / 動物 / 海洋 / 交通 / 恐龍 / 購物 / 數學 / 英文 / 彼得兔
+
+    範例格式：
+    <div class="product-card" data-status="新品項" data-age="3-4 4-6" data-theme="動物">
+      <div class="card-img-placeholder">🐾</div>
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3–4歲</span>
+          <span class="tag tag-age">4–6歲</span>
+          <span class="tag tag-theme">動物</span>
+        </div>
+        <div class="card-name">商品名稱</div>
+        <div class="card-desc">簡短說明文字，1–2句話描述遊戲玩法或特色。</div>
+        <div class="card-footer">
+          <span class="card-price">$XXX</span>
+          <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+        </div>
+      </div>
+    </div>
+    ═══════════════════════════════════════════════════════════════
+    -->
+
+    <!-- 1. 企鵝總動員 -->
+    <div class="product-card" data-status="新品項" data-age="2 3 4 6" data-theme="海洋 動物" data-type="數學 顏色" data-method="翻牌">
+      <img class="card-img" src="img-penguin.JPG" alt="企鵝總動員" style="object-position: 25% 35%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">海洋</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-type">數學</span>
+          <span class="tag tag-type">顏色</span>
+        </div>
+        <div class="card-name">企鵝總動員</div>
+        <div class="card-desc">翻牌翻出海豹或漩渦，企鵝捕捉的小魚就要注意啦！練習社會力與顏色辨識、基礎數數。</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="企鵝總動員" data-slides="claude/愛兒-IG輪播/企鵝總動員/ig-penguin-1.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-2.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-3.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-4.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-5.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-6.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-7.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-8.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-9.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-10.jpg,claude/愛兒-IG輪播/企鵝總動員/ig-penguin-11.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 昆蟲物語 -->
+    <div class="product-card" data-status="新品項" data-age="2 3 4" data-theme="昆蟲" data-type="數學" data-method="翻牌 轉盤">
+      <img class="card-img" src="img-bug.jpg" alt="昆蟲物語" style="object-position: 25% 40%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-theme">昆蟲</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">昆蟲物語</div>
+        <div class="card-desc">轉盤決定拿幾片葉子，葉子後躲著各種昆蟲！拼圖完成後數數看誰收集到最多昆蟲，還能玩探險找昆蟲。</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="昆蟲物語" data-slides="claude/愛兒-IG輪播/昆蟲物語/ig-bug-1.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-2.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-3.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-4.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-5.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-6.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-7.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-8.jpg,claude/愛兒-IG輪播/昆蟲物語/ig-bug-9.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 小狗對對碰 -->
+    <div class="product-card" data-status="新品項" data-age="2 3 4" data-theme="動物" data-type="顏色" data-method="翻牌">
+      <img class="card-img" src="img-doggy.JPG" alt="小狗對對碰" style="object-position: 50% 15%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-type">顏色</span>
+        </div>
+        <div class="card-name">小狗對對碰</div>
+        <div class="card-desc">翻牌找出屬於自家狗屋的小狗，每隻狗狗都有不同的名字，試著唸唸看吧！</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="小狗對對碰" data-slides="claude/愛兒-IG輪播/小狗對對碰/ig-doggy-1.jpg,claude/愛兒-IG輪播/小狗對對碰/ig-doggy-2.jpg,claude/愛兒-IG輪播/小狗對對碰/ig-doggy-3.jpg,claude/愛兒-IG輪播/小狗對對碰/ig-doggy-4.jpg,claude/愛兒-IG輪播/小狗對對碰/ig-doggy-5.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 色彩列車 -->
+    <div class="product-card" data-status="新品項" data-age="2 3" data-theme="動物 交通" data-type="顏色">
+      <img class="card-img" src="img-train.JPG" alt="色彩列車" style="object-position: 50% 20%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-theme">交通</span>
+          <span class="tag tag-type">顏色</span>
+        </div>
+        <div class="card-name">色彩列車</div>
+        <div class="card-desc">擲骰子拿出對應的彩色動物拼上去，找出同色系的夥伴搭上火車！2歲也能一起玩。</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="色彩列車" data-slides="claude/愛兒-IG輪播/色彩列車/ig-train-1.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-2.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-3.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-4.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-5.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-6.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-7.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-8.jpg,claude/愛兒-IG輪播/色彩列車/ig-train-9.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 字母賓果 -->
+    <div class="product-card" data-status="新品項" data-age="3 4 5 6" data-theme="" data-type="英文" data-method="翻牌">
+      <img class="card-img" src="img-bingo.JPG" alt="字母賓果" style="object-position: 50% 20%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-type">英文</span>
+        </div>
+        <div class="card-name">字母賓果</div>
+        <div class="card-desc">翻牌玩賓果超有趣！找同樣圖樣或字首同字母，四種玩法讓單字默默熟練記起來。</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="字母賓果" data-slides="claude/愛兒-IG輪播/字母賓果/ig-bingo-1.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-2.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-3.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-4.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-5.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-6.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-7.jpg,claude/愛兒-IG輪播/字母賓果/ig-bingo-8.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 五隻小鴨 -->
+    <div class="product-card" data-status="新品項" data-age="3 4 5 6" data-theme="動物" data-type="" data-method="翻牌">
+      <img class="card-img" src="img-duck.JPG" alt="五隻小鴨" style="object-position: 50% 20%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">動物</span>
+        </div>
+        <div class="card-name">五隻小鴨</div>
+        <div class="card-desc">池塘裡的小鴨找媽媽！迷路的到山丘上等，鴨媽媽再把寶貝趕入河。哪隻鴨媽媽最先找齊就是優勝！</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="五隻小鴨" data-slides="claude/愛兒-IG輪播/五隻小鴨子/ig-duck-1.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-2.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-3.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-4.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-5.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-6.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-7.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-8.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-9.jpg,claude/愛兒-IG輪播/五隻小鴨子/ig-duck-10.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. 鬼屋捉迷藏 -->
+    <div class="product-card" data-status="新品項" data-age="2 3 4 5" data-theme="怪物" data-type="可攜桌遊" data-method="翻牌">
+      <img class="card-img" src="img-haunted.JPG" alt="鬼屋捉迷藏" style="object-position: 50% 10%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-theme">怪物</span>
+          <span class="tag tag-type">可攜桌遊</span>
+        </div>
+        <div class="card-name">鬼屋捉迷藏</div>
+        <div class="card-desc">鬼屋要辦派對！翻牌觀察找自己的鬼屋，讓鬼怪快快回家，誰家鬼怪先集合就贏！</div>
+        <div class="card-footer">
+          <span class="card-price">$245</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="鬼屋捉迷藏" data-slides="claude/愛兒-IG輪播/可攜式桌遊款/ig-haunted-1.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-haunted-2.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-haunted-3.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-haunted-4.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. 樂透萬聖節 -->
+    <div class="product-card" data-status="新品項" data-age="2 3 4 5" data-theme="怪物" data-type="可攜桌遊" data-method="翻牌">
+      <img class="card-img" src="img-lotto.JPG" alt="樂透萬聖節" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-theme">怪物</span>
+          <span class="tag tag-type">可攜桌遊</span>
+        </div>
+        <div class="card-name">樂透萬聖節</div>
+        <div class="card-desc">翻牌找對應，2歲半也能玩！誰先鋪滿搗蛋牌就是優勝，考驗今天的翻牌運氣！</div>
+        <div class="card-footer">
+          <span class="card-price">$245</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="樂透萬聖節" data-slides="claude/愛兒-IG輪播/可攜式桌遊款/ig-lotto-1.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-lotto-2.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-lotto-3.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-lotto-4.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-lotto-5.jpg,claude/愛兒-IG輪播/可攜式桌遊款/ig-lotto-6.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. 臭味相投 -->
+    <div class="product-card" data-status="新品項" data-age="3 4 5 6" data-theme="怪物" data-type="顏色 數學" data-method="翻牌 轉盤">
+      <img class="card-img" src="img-troll.JPG" alt="臭味相投" style="object-position: 65% 10%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">怪物</span>
+          <span class="tag tag-type">顏色</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">臭味相投</div>
+        <div class="card-desc">洞穴裡藏著五彩黏液，依轉盤步數前進，挖到的黏液下還藏著蟲蟲！翻面還能玩色彩辨識，誰收集最多蟲蟲就是贏家。</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="臭味相投" data-slides="claude/愛兒-IG輪播/洞穴山怪/ig-troll-1.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-2.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-3.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-4.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-5.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-6.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-7.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-8.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-9.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-10.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-11.jpg,claude/愛兒-IG輪播/洞穴山怪/ig-troll-12.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. 農場家族 -->
+    <div class="product-card" data-status="新品項" data-age="2 3 4 5" data-theme="動物" data-type="" data-method="翻牌">
+      <img class="card-img" src="img-farm.JPG" alt="農場家族" style="object-position: 50% 20%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-theme">動物</span>
+        </div>
+        <div class="card-name">農場家族</div>
+        <div class="card-desc">立體農莊裡住著可愛的動物家庭，三色卡牌玩視覺辨識，搭配口語引導加強練習，回農莊時還可以模仿動物叫聲！</div>
+        <div class="card-footer">
+          <span class="card-price">$380</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <button class="intro-btn" data-title="農場家族" data-slides="claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-1.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-2.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-3.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-4.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-5.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-6.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-7.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-8.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-9.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-10.jpg,claude/愛兒-IG輪播/農莊動物回家囉!/ig-farm-11.jpg">看丞雙介紹</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 11. 加減熊厲害 -->
+    <div class="product-card" data-status="上團品項" data-age="5 6" data-theme="動物" data-type="數學" data-method="翻牌">
+      <img class="card-img" src="claude/愛兒-IG輪播/加減熊厲害/651246142_122281806806022538_5011668774497169263_n.jpg" alt="加減熊厲害" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">加減熊厲害</div>
+        <div class="card-desc">透過1到20內的加減，這組適合已經對加減法有概念，但需要更熟悉的孩子來玩！讓熊媽媽找到熊寶寶！</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1Bh82mB1BYQKuS1mZyouZoXXPfcUHyZq1?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. 羊駝睡覺囉 -->
+    <div class="product-card" data-status="上團品項" data-age="2 3 4 5" data-theme="動物" data-type="可攜桌遊" data-method="翻牌">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3567.JPG" alt="羊駝睡覺囉" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-type">可攜桌遊</span>
+        </div>
+        <div class="card-name">羊駝睡覺囉</div>
+        <div class="card-desc">抽到鬧鐘就會吵醒自己的羊駝，抽到上半身或下半身就等拼圖完整得分！</div>
+        <div class="card-footer">
+          <span class="card-price">$245</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1ibFR06q9xwmhZ0m4uU8g7pu1shj7cj5i?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. 考古玩數學 -->
+    <div class="product-card" data-status="上團品項" data-age="5 6" data-theme="動物" data-type="數學" data-method="擲骰子">
+      <img class="card-img" src="claude/愛兒-IG輪播/考古玩數學/650664134_122281872038022538_2378034397706089798_n.jpg" alt="考古玩數學" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">考古玩數學</div>
+        <div class="card-desc">擲骰子玩大富翁的設計，原始人走到+-號就抽卡片回答，答案還可以用火焰掃描是否正確，若走到羽毛可搔癢阻撓對手！</div>
+        <div class="card-footer">
+          <span class="card-price">$630</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1CDRB7Hv687EcRbJ6XBKIffWDkVqGMKbz?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14. 長頸鹿圍多多 -->
+    <div class="product-card" data-status="上團品項" data-age="2 3 4 5 6" data-theme="" data-type="顏色" data-method="翻牌 擲骰子">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3546.JPG" alt="長頸鹿圍多多" style="object-position: 50% 30%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">2歲起</span>
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-type">顏色</span>
+        </div>
+        <div class="card-name">長頸鹿圍多多</div>
+        <div class="card-desc">完全是偵測運氣的超推薦桌遊！就算是新朋友也能玩，玩法只需要擲骰子翻色彩牌，再拼上自己的長頸鹿，誰的圍巾多就優勝！</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1h333rAros9DjEF2kIDN3wjyJXt4nBr1m?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. 採購趣 -->
+    <div class="product-card" data-status="上團品項" data-age="3 4 5 6" data-theme="購物" data-type="" data-method="翻牌">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3551.JPG" alt="採購趣" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">購物</span>
+        </div>
+        <div class="card-name">採購趣</div>
+        <div class="card-desc">依照翻牌來競賽，誰優先買完清單用品就勝出！</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1FtRR5A43p0WDPfZN0GcSc3S8fg-8-pJA?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16. 野餐去 -->
+    <div class="product-card" data-status="上團品項" data-age="3 4 5 6" data-theme="購物" data-type="" data-method="翻牌">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3547.JPG" alt="野餐去" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">購物</span>
+        </div>
+        <div class="card-name">野餐去</div>
+        <div class="card-desc">野餐盒裡的食物好多，考驗孩子觀察力來採買！非常適合2歲起的小朋友，培養觀察力與專注！</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1T2wtbKypE4e2TblBQxtviHKgRlsk3_30?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 17. 頑皮小猴 -->
+    <div class="product-card" data-status="上團品項" data-age="4 5 6" data-theme="動物" data-type="數學" data-method="翻牌 轉盤">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3557.JPG" alt="頑皮小猴" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">動物</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">頑皮小猴</div>
+        <div class="card-desc">轉到搗蛋猴就有好多香蕉吃啦！這組真的很推薦4人對戰，最終算算誰的香蕉多？轉到泳池猴就通通都沒香蕉，考驗運氣的大型桌遊！</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1PNIUM03ov-awoXauhXcQVJ-U-eYovcER?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 18. 瘋狂廚師 -->
+    <div class="product-card" data-status="上團品項" data-age="3 4 5 6" data-theme="購物" data-type="" data-method="翻牌">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3544.JPG" alt="瘋狂廚師" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">購物</span>
+        </div>
+        <div class="card-name">瘋狂廚師</div>
+        <div class="card-desc">很適合跟3歲起的孩子玩，看看自己選的主廚擅長菜餚是什麼，翻牌蒐集自己需要的食材，最後靠運氣拿餐盤搶優勝！</div>
+        <div class="card-footer">
+          <span class="card-price">$360</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1dP1it0NbQL_1MMGwrMBt7fLAEBJXybw9?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 19. 歡樂公車 -->
+    <div class="product-card" data-status="上團品項" data-age="3 4 5" data-theme="交通" data-type="數學" data-method="轉盤 擲骰子">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3564.JPG" alt="歡樂公車" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-theme">交通</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">歡樂公車</div>
+        <div class="card-desc">10內的加減，透過乘客的增減認識數學，轉盤轉到6以內來上下車，是愛車車的孩子推薦熱買款！！！</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1sx8Zx-ILTPd0jDC7ErrmEylrinRppIui?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 21. 三隻小豬 -->
+    <div class="product-card" data-status="上團品項" data-age="3 4 5 6" data-theme="動物" data-type="" data-method="擲骰子 轉盤">
+      <div style="width:100%; aspect-ratio:1/1; overflow:hidden; background:#f0f0f0;">
+        <img src="claude/愛兒-IG輪播/三隻小豬/IMG_8282.jpg" alt="三隻小豬" style="width:100%; height:100%; object-fit:cover; object-position:100% 40%; transform:scale(1.5); transform-origin:right center;">
+      </div>
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">3歲</span>
+          <span class="tag tag-age">4歲</span>
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-theme">動物</span>
+        </div>
+        <div class="card-name">三隻小豬</div>
+        <div class="card-desc">如大富翁的玩法，擲骰子前進，搭出茅草屋、木屋、紅磚屋！如果擲到大野狼，就有機會讓對手玩家被拆家唷！</div>
+        <div class="card-footer">
+          <span class="card-price">$630</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/1iQaVjblFV37f1qpz1dThTDioFwuXocqi?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 20. 乘法超能力 -->
+    <div class="product-card" data-status="上團品項" data-age="5 6" data-theme="" data-type="數學" data-method="轉盤 翻牌">
+      <img class="card-img" src="claude/drive-download-20260617T073348Z-3-001/IMG_3553.JPG" alt="乘法超能力" style="object-position: 50% 50%;">
+      <div class="card-body">
+        <div class="card-tags">
+          <span class="tag tag-age">5歲</span>
+          <span class="tag tag-age">6歲</span>
+          <span class="tag tag-type">數學</span>
+        </div>
+        <div class="card-name">乘法超能力</div>
+        <div class="card-desc">這組有乘法驗算板，不怕剛接觸乘法看不懂，組合內有四隻英雄角色，各自擁有超能力抵抗城市妖怪，抵抗成功還有機會再加分！</div>
+        <div class="card-footer">
+          <span class="card-price">$510</span>
+          <div class="card-btns">
+            <a class="card-btn" href="https://shop.lovekidsco.com.tw/shop/427-chengshuang260618" target="_blank">我需要這個</a>
+            <a class="intro-btn" href="https://drive.google.com/drive/folders/17-Z8cUM5n-Kx3MxWtj7z8LsaiKOdhFSN?usp=drive_link" target="_blank">看丞雙介紹</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /product-grid -->
+</div><!-- /product-section -->
+
+<!-- ── Lightbox ── -->
+<div id="lightbox">
+  <div class="lb-wrapper">
+    <button class="lb-nav lb-prev" id="lb-prev">&#8249;</button>
+    <div class="lb-container">
+      <button class="lb-close" id="lb-close">✕</button>
+      <div id="lb-slides"></div>
+      <div class="lb-dots" id="lb-dots"></div>
+    </div>
+    <button class="lb-nav lb-next" id="lb-next">&#8250;</button>
+  </div>
+</div>
+
+<footer>
+  © 2026 桌遊導購 · 商品購買請至廠商團購頁
+</footer>
+
+<script>
+  // 自動在每張卡插入狀態 tag
+  document.querySelectorAll('.product-card[data-status]').forEach(card => {
+    const status = card.dataset.status;
+    if (status) {
+      const tagsDiv = card.querySelector('.card-tags');
+      if (tagsDiv) {
+        const tag = document.createElement('span');
+        tag.className = 'tag tag-status';
+        tag.textContent = status;
+        tagsDiv.prepend(tag);
+      }
+    }
+  });
+
+  const ageBtns    = document.querySelectorAll('.age-btn');
+  const themeBtns  = document.querySelectorAll('.theme-btn');
+  const typeBtns   = document.querySelectorAll('.type-btn');
+  const statusBtns = document.querySelectorAll('.status-btn');
+  const methodBtns = document.querySelectorAll('.method-btn');
+  const cards      = document.querySelectorAll('.product-card');
+  const noResult   = document.getElementById('no-result');
+
+  let activeAge    = 'all';
+  let activeTheme  = 'all';
+  let activeType   = 'all';
+  let activeStatus = 'all';
+  let activeMethod = 'all';
+
+  function filterCards() {
+    let visible = 0;
+    cards.forEach(card => {
+      const ages     = card.dataset.age    ? card.dataset.age.split(' ')    : [];
+      const themes   = card.dataset.theme  ? card.dataset.theme.split(' ')  : [];
+      const types    = card.dataset.type   ? card.dataset.type.split(' ')   : [];
+      const statuses = card.dataset.status ? card.dataset.status.split(' ') : [];
+      const methods  = card.dataset.method ? card.dataset.method.split(' ') : [];
+
+      const ageOk    = activeAge    === 'all' || ages.includes(activeAge);
+      const themeOk  = activeTheme  === 'all' || themes.includes(activeTheme);
+      const typeOk   = activeType   === 'all' || types.includes(activeType);
+      const statusOk = activeStatus === 'all' || statuses.includes(activeStatus);
+      const methodOk = activeMethod === 'all' || methods.includes(activeMethod);
+
+      if (ageOk && themeOk && typeOk && statusOk && methodOk) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    noResult.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  ageBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      ageBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeAge = btn.dataset.age;
+      filterCards();
+    });
+  });
+
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      themeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTheme = btn.dataset.theme;
+      filterCards();
+    });
+  });
+
+  typeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      typeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeType = btn.dataset.type;
+      filterCards();
+    });
+  });
+
+  statusBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      statusBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeStatus = btn.dataset.status;
+      filterCards();
+    });
+  });
+
+  methodBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      methodBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeMethod = btn.dataset.method;
+      filterCards();
+    });
+  });
+
+  // ── Lightbox ──
+  const lightbox  = document.getElementById('lightbox');
+  const lbSlides  = document.getElementById('lb-slides');
+  const lbDots    = document.getElementById('lb-dots');
+  const lbClose   = document.getElementById('lb-close');
+  const lbPrev    = document.getElementById('lb-prev');
+  const lbNext    = document.getElementById('lb-next');
+  let currentSlide = 0;
+  let slideList    = [];
+
+  function openLightbox(slides, title) {
+    slideList = slides;
+    currentSlide = 0;
+    lbSlides.innerHTML = '';
+    lbDots.innerHTML   = '';
+
+    if (slides.length === 0) {
+      lbSlides.innerHTML = `<div class="lb-placeholder">📷 ${title} 的介紹照片<br>尚未上傳</div>`;
+    } else {
+      slides.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.className = 'lb-img' + (i === 0 ? ' active' : '');
+        img.src = src;
+        img.alt = title;
+        lbSlides.appendChild(img);
+
+        const dot = document.createElement('div');
+        dot.className = 'lb-dot' + (i === 0 ? ' active' : '');
+        lbDots.appendChild(dot);
+      });
+    }
+
+    lbPrev.style.display = slides.length > 1 ? 'flex' : 'none';
+    lbNext.style.display = slides.length > 1 ? 'flex' : 'none';
+    lightbox.classList.add('open');
+  }
+
+  function goToSlide(n) {
+    const imgs = lbSlides.querySelectorAll('.lb-img');
+    const dots = lbDots.querySelectorAll('.lb-dot');
+    imgs[currentSlide].classList.remove('active');
+    dots[currentSlide]?.classList.remove('active');
+    currentSlide = (n + slideList.length) % slideList.length;
+    imgs[currentSlide].classList.add('active');
+    dots[currentSlide]?.classList.add('active');
+  }
+
+  lbClose.addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+  lbPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+  lbNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  document.querySelectorAll('.intro-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const raw   = btn.dataset.slides || '';
+      const title = btn.dataset.title  || '';
+      const slides = raw ? raw.split(',').map(s => s.trim()) : [];
+      openLightbox(slides, title);
+    });
+  });
+
+  // ── 篩選區滾動收起 ──
+  (function() {
+    const filterEl = document.querySelector('.filter-section');
+    let lastY = 0;
+    window.addEventListener('scroll', () => {
+      const currentY = window.scrollY;
+      if (currentY > lastY && currentY > 80) {
+        filterEl.classList.add('hide-filters');
+      } else {
+        filterEl.classList.remove('hide-filters');
+      }
+      lastY = currentY;
+    }, { passive: true });
+  })();
+
+  // ── 購物試算 ──
+  const cartItems = {};
+
+  function playCalcBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+  }
+
+  function addToCart(name, price) {
+    if (cartItems[name]) {
+      cartItems[name].count++;
+    } else {
+      cartItems[name] = { price, count: 1 };
+    }
+    renderCart();
+  }
+
+  function removeFromCart(name) {
+    if (!cartItems[name]) return;
+    cartItems[name].count--;
+    if (cartItems[name].count <= 0) delete cartItems[name];
+    renderCart();
+  }
+
+  function renderCart() {
+    const container = document.getElementById('cart-items');
+    const emptyMsg  = document.getElementById('cart-empty');
+    const totalEl   = document.getElementById('cart-total-amount');
+    const keys = Object.keys(cartItems);
+
+    [...container.children].forEach(c => { if (c !== emptyMsg) c.remove(); });
+
+    if (keys.length === 0) {
+      emptyMsg.style.display = 'block';
+      totalEl.textContent = '$0';
+      return;
+    }
+
+    emptyMsg.style.display = 'none';
+    let total = 0;
+
+    keys.forEach(name => {
+      const { price, count } = cartItems[name];
+      const num = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+      total += num * count;
+
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      row.innerHTML = `
+        <button class="cart-remove-btn" onclick="removeFromCart(${JSON.stringify(name)})">−</button>
+        <span class="cart-item-name">${name}</span>
+        ${count > 1 ? `<span class="cart-item-qty">x${count}</span>` : ''}
+        <span class="cart-item-price">${price}${count > 1 ? ` x${count}` : ''}</span>
+      `;
+      container.appendChild(row);
+    });
+
+    totalEl.textContent = '$' + total.toLocaleString();
+  }
+
+  // 注入 + 按鈕到每張商品卡
+  document.querySelectorAll('.product-card').forEach(card => {
+    const name  = card.querySelector('.card-name')?.textContent?.trim() || '';
+    const price = card.querySelector('.card-price')?.textContent?.trim() || '';
+    if (!name) return;
+
+    const footer = card.querySelector('.card-footer');
+    if (!footer) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'add-btn';
+    btn.textContent = '+ 加入試算';
+    btn.addEventListener('click', () => { playCalcBeep(); addToCart(name, price); });
+    footer.appendChild(btn);
+  });
+</script>
+
+<!-- 浮動試算面板 -->
+<div id="cart-panel">
+  <div class="cart-header">預計想買的品項</div>
+  <div id="cart-items">
+    <div id="cart-empty">尚未加入任何品項</div>
+  </div>
+  <div id="cart-total">
+    <span>合計</span>
+    <span id="cart-total-amount">$0</span>
+  </div>
+</div>
+
+</body>
+</html>
