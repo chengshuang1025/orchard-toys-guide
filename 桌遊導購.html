@@ -62,6 +62,27 @@
       transform: translateY(-100%);
     }
 
+    /* ── 分類篩選浮動按鈕 ── */
+    #filter-toggle-btn {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      background: #5A9690;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      font-family: 'Noto Serif TC', '微軟正黑體', serif;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 1999;
+      display: none;
+      transition: background 0.2s;
+    }
+    #filter-toggle-btn:hover { background: #4a7d79; }
+
     .filter-label {
       font-size: 0.75rem;
       font-weight: bold;
@@ -236,11 +257,19 @@
     .card-btns {
       display: flex;
       gap: 6px;
+      flex-wrap: wrap;
     }
     .card-btns .card-btn,
     .card-btns .intro-btn {
-      flex: 1;
+      flex: 1 1 auto;
+      min-width: 0;
       text-align: center;
+      white-space: nowrap;
+    }
+    @media (max-width: 360px) {
+      .card-btns {
+        flex-direction: column;
+      }
     }
 
     .intro-btn {
@@ -395,6 +424,22 @@
       font-weight: bold;
       font-size: 0.9rem;
       letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .cart-toggle-icon {
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+    #cart-panel.collapsed {
+      width: auto;
+    }
+    #cart-panel.collapsed #cart-items,
+    #cart-panel.collapsed #cart-total {
+      display: none;
     }
     #cart-items {
       flex: 1;
@@ -1237,19 +1282,68 @@
     });
   });
 
-  // ── 篩選區滾動收起 ──
+  // ── 試算面板折疊 ──
   (function() {
-    const filterEl = document.querySelector('.filter-section');
-    let lastY = 0;
-    window.addEventListener('scroll', () => {
-      const currentY = window.scrollY;
-      if (currentY > lastY && currentY > 80) {
-        filterEl.classList.add('hide-filters');
+    const panel      = document.getElementById('cart-panel');
+    const headerBtn  = document.getElementById('cart-header-btn');
+    const label      = document.getElementById('cart-header-label');
+    const icon       = document.getElementById('cart-toggle-icon');
+    let collapsed = true;
+
+    function applyState() {
+      if (collapsed) {
+        panel.classList.add('collapsed');
+        label.textContent = '預計想買的品項 +';
+        icon.style.display = 'none';
       } else {
-        filterEl.classList.remove('hide-filters');
+        panel.classList.remove('collapsed');
+        label.textContent = '預計想買的品項';
+        icon.style.display = '';
+        icon.textContent = '▲';
       }
-      lastY = currentY;
+    }
+
+    applyState();
+
+    headerBtn.addEventListener('click', () => {
+      collapsed = !collapsed;
+      applyState();
+    });
+  })();
+
+  // ── 篩選區：滾動收起 + 按鈕控制 ──
+  (function() {
+    const filterEl  = document.querySelector('.filter-section');
+    const toggleBtn = document.getElementById('filter-toggle-btn');
+    let filterOpen  = true;
+
+    function setFilter(open) {
+      filterOpen = open;
+      if (open) {
+        filterEl.classList.remove('hide-filters');
+        toggleBtn.textContent = '✕ 關閉篩選';
+      } else {
+        filterEl.classList.add('hide-filters');
+        toggleBtn.textContent = '☰ 分類篩選';
+      }
+    }
+
+    // 往下滾超過篩選區時自動收起一次，之後完全靠按鈕控制
+    let autoHidden = false;
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY > 80;
+      toggleBtn.style.display = scrolled ? 'block' : 'none';
+      if (scrolled && !autoHidden) {
+        setFilter(false);
+        autoHidden = true;
+      }
+      if (!scrolled) {
+        setFilter(true);
+        autoHidden = false;
+      }
     }, { passive: true });
+
+    toggleBtn.addEventListener('click', () => setFilter(!filterOpen));
   })();
 
   // ── 購物試算 ──
@@ -1341,9 +1435,15 @@
   });
 </script>
 
+<!-- 分類篩選浮動按鈕 -->
+<button id="filter-toggle-btn">☰ 分類篩選</button>
+
 <!-- 浮動試算面板 -->
 <div id="cart-panel">
-  <div class="cart-header">預計想買的品項</div>
+  <div class="cart-header" id="cart-header-btn">
+    <span id="cart-header-label">預計想買的品項</span>
+    <span class="cart-toggle-icon" id="cart-toggle-icon">▲</span>
+  </div>
   <div id="cart-items">
     <div id="cart-empty">尚未加入任何品項</div>
   </div>
