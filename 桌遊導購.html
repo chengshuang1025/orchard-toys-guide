@@ -53,19 +53,13 @@
       background: #F5F5F5;
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      position: fixed;
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
       z-index: 100;
       transition: top 0.3s ease;
     }
     .filter-section.hide-filters {
-      top: -400px;
-    }
-    /* 商品區補上篩選欄高度，避免被遮住 */
-    #filter-spacer {
-      transition: height 0.3s ease;
+      top: -500px;
     }
 
     /* ── 分類篩選浮動按鈕 ── */
@@ -584,9 +578,6 @@
     <button class="filter-btn method-btn" data-method="翻牌">翻牌</button>
   </div>
 </div>
-
-<!-- 篩選欄佔位補丁 -->
-<div id="filter-spacer"></div>
 
 <!-- ── 商品列表 ── -->
 <div class="product-section">
@@ -1338,16 +1329,11 @@
     });
   })();
 
-  // ── 篩選區：fixed 定位 + spacer 補高 + 按鈕控制 ──
+  // ── 篩選區：sticky 定位 + 按鈕控制 ──
   (function() {
     const filterEl  = document.querySelector('.filter-section');
-    const spacer    = document.getElementById('filter-spacer');
     const toggleBtn = document.getElementById('filter-toggle-btn');
     let filterOpen  = true;
-
-    function syncSpacer() {
-      spacer.style.height = filterOpen ? filterEl.offsetHeight + 'px' : '0px';
-    }
 
     function setFilter(open) {
       filterOpen = open;
@@ -1358,11 +1344,7 @@
         filterEl.classList.add('hide-filters');
         toggleBtn.textContent = '☰ 分類篩選';
       }
-      setTimeout(syncSpacer, 320); // 等 transition 結束後同步
     }
-
-    syncSpacer();
-    window.addEventListener('resize', syncSpacer);
 
     // 往下滾超過 header 後自動收起一次，之後全靠按鈕
     let autoHidden = false;
