@@ -331,25 +331,29 @@
       position: relative;
       display: flex;
       align-items: center;
-      gap: 10px;
     }
 
     .lb-nav {
-      background: rgba(255,255,255,0.3);
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
       border: none;
       color: white;
-      font-size: 1.6rem;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+      font-size: 2rem;
+      width: 52px;
+      height: 72px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      z-index: 10;
       transition: background 0.2s;
     }
-    .lb-nav:hover { background: rgba(255,255,255,0.6); }
+    .lb-prev { left: 0; border-radius: 0 8px 8px 0; }
+    .lb-next { right: 0; border-radius: 8px 0 0 8px; }
+    .lb-nav:hover { background: rgba(0,0,0,0.6); }
 
     .lb-close {
       position: absolute;
