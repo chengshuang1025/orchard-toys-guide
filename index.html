@@ -1411,12 +1411,12 @@
     renderCart();
   }
 
-  function removeFromCart(name) {
+  window.removeFromCart = function(name) {
     if (!cartItems[name]) return;
     cartItems[name].count--;
     if (cartItems[name].count <= 0) delete cartItems[name];
     renderCart();
-  }
+  };
 
   function renderCart() {
     const container = document.getElementById('cart-items');
