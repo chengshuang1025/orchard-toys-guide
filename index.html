@@ -1442,12 +1442,30 @@
 
       const row = document.createElement('div');
       row.className = 'cart-item';
-      row.innerHTML = `
-        <button class="cart-remove-btn" onclick="removeFromCart(${JSON.stringify(name)})">−</button>
-        <span class="cart-item-name">${name}</span>
-        ${count > 1 ? `<span class="cart-item-qty">x${count}</span>` : ''}
-        <span class="cart-item-price">${price}${count > 1 ? ` x${count}` : ''}</span>
-      `;
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'cart-remove-btn';
+      removeBtn.textContent = '−';
+      removeBtn.addEventListener('click', () => {
+        if (!cartItems[name]) return;
+        cartItems[name].count--;
+        if (cartItems[name].count <= 0) delete cartItems[name];
+        renderCart();
+      });
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'cart-item-name';
+      nameSpan.textContent = name;
+      const priceSpan = document.createElement('span');
+      priceSpan.className = 'cart-item-price';
+      priceSpan.textContent = count > 1 ? `${price} x${count}` : price;
+      row.appendChild(removeBtn);
+      row.appendChild(nameSpan);
+      if (count > 1) {
+        const qtySpan = document.createElement('span');
+        qtySpan.className = 'cart-item-qty';
+        qtySpan.textContent = `x${count}`;
+        row.appendChild(qtySpan);
+      }
+      row.appendChild(priceSpan);
       container.appendChild(row);
     });
 
